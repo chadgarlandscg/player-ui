@@ -10,7 +10,7 @@ button.addEventListener('click', (event) => {
     axios.post("http://localhost:9999/players", {name: nameInput.value});
 });
 
-axios.get("http://facebook-server.com/players").then((response) => {
+axios.get("http://localhost:9999/players").then((response) => {
     const players = response.data;
     players.forEach(player => {
         const paragraphElement = document.createElement('p');
