@@ -18,7 +18,7 @@ export class Form extends React.Component {
     }
 
     onButtonClick() {
-        this.props.onSubmit(this.state);
+        console.log(this.state);
     }
 
     render() {
