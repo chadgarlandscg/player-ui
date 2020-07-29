@@ -29,7 +29,7 @@ export class App extends React.Component {
         return (
             <div>
                 <h5>Hello, Sergio and Sebas</h5>
-                <Form buttonTitle="Click me pretty please!"/>
+                <Form buttonTitle={{name: "Bob", health: 100}}/>
                 <Form />
 
                 <FormSFC 
@@ -38,7 +38,7 @@ export class App extends React.Component {
                     onButtonClick={this.onButtonClick}
                     buttonTitle="Click me!"
                 />
-                
+
             </div>
         );
     }
