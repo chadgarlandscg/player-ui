@@ -3,9 +3,9 @@ import { addPlayer } from './playerApi';
 import { Form } from './Form';
 import { FormSFC } from './FormSFC';
 
-export class App extends React.Component {
-    constructor() {
-        super();
+export class App extends React.Component<any, {inputValue: string;}> {
+    constructor(props) {
+        super(props);
         this.state = {
             inputValue: ""
         };
@@ -13,7 +13,7 @@ export class App extends React.Component {
         this.onButtonClick = this.onButtonClick.bind(this);
     }
 
-    onInputChange(event) {
+    onInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         const newState = {
             inputValue: event.target.value
         };
@@ -29,8 +29,8 @@ export class App extends React.Component {
         return (
             <div>
                 <h5>Hello, Sergio and Sebas</h5>
-                <Form buttonTitle={{name: "Bob", health: 100}}/>
-                <Form />
+                <Form buttonTitle={"Bob"} />
+                <Form buttonTitle={"Tom"}/>
 
                 <FormSFC 
                     inputValue={this.state.inputValue}

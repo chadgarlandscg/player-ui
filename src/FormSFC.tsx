@@ -1,6 +1,13 @@
 import React from 'react';
 
-export function FormSFC(props) {
+type FormSFCProps = {
+    inputValue: string;
+    onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onButtonClick: () => void;
+    buttonTitle: string;
+}
+
+export function FormSFC(props: FormSFCProps) {
     return (
         <div>
             <input value={props.inputValue} onChange={props.onInputChange}/>

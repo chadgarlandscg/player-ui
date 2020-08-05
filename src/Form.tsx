@@ -1,5 +1,14 @@
 import React from 'react';
-export class Form extends React.Component {
+
+type FormProps = {
+    buttonTitle: string;
+}
+
+type FormState = {
+    inputValue: string;
+}
+
+export class Form extends React.Component<FormProps, FormState> {
     constructor(props) {
         super(props);
         this.state = {
