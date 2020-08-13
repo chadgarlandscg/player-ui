@@ -1,89 +1,87 @@
-console.log("Hello, world!");
-
-var x: string = "test";
-
-function addNumbers(x: number, y: number): number {
-    return x + y;
+interface IAttack {
+    attacker: IAttacker;
+    defender: IDefender;
+    damage: number;
 }
 
-const y = addNumbers(2, 3);
+type HealthStatus = 'dead' | 'alive';
 
-function addNames(n1: string, n2: string) {
-    console.log(n1 + n2);
-    return n1 + n2;
-}
-
-const z = addNames("sergio", "chad");
-
-console.log(z);
-
-type P = {
-    name: string;
+interface IHealthBar {
+    status: HealthStatus;
     health: number;
-    power: number;
-    attack: (player: P) => void;
 }
 
-const p1: P = {
-    name: "Chad",
-    health: 100,
-    power: 1,
-    attack: (player: P) => {
-        player.health = player.health - this.power
-    }
+interface IPlayerHealthBar extends IHealthBar {
+    register: (attack: IAttack) => IHealthBar;
 }
-
-const p2: P = {
-    name: "Chad",
-    health: 100,
-    power: 1,
-    attack: (player: P) => {
-        player.health = player.health - this.power
-    }
-}
-
 
 interface IAttacker {
-    attack: (player: Player) => void;
-}
-
-class Player implements IAttacker {
-    health: number;
-    name: string;
+    attack: (defender: IDefender) => IAttack;
     power: number;
-    constructor(initialName: string, initialPower: number) {
-        this.health = 100;
-        this.name = initialName;
-        this.power = initialPower;
-    }
-    attack(player: Player) {
-        player.health = player.health - this.power;
+}
+
+interface IDefender {
+    defend: (attack: IAttack) => IHealthBar;
+    resistance: number;
+}
+
+interface IPlayer extends IAttacker, IDefender {
+
+}
+
+interface IWall extends IDefender {
+
+}
+
+class Attack implements IAttack {
+    constructor(
+        public readonly attacker: IAttacker,
+        public readonly defender: IDefender
+    ) {}
+
+    get damage() {
+        return this.attacker.power - this.defender.resistance;
     }
 }
 
-class Barbarian extends Player implements IAttacker {
-    attack(player: Player) {
-        player.health = player.health - this.power * 2;
+class Player implements IPlayer {
+    private readonly healthBar: IPlayerHealthBar;
+    constructor(attacks: IAttack[]) {
+        this.healthBar = new PlayerHealthBar(attacks);
+    }
+    protected get basePower() { return 2.0 };
+    protected get baseResistance() { return 1.0 };
+    attack(defender: IDefender): IAttack {
+        return new Attack(this, defender);
+    }
+    get power() {
+        return this.basePower;
+    }
+    defend(attack: IAttack): IHealthBar {
+        return this.healthBar.register(attack);
+    }
+    get resistance() {
+        return this.baseResistance;
     }
 }
 
-var fighters: IAttacker[] = [new Barbarian("Steve", 10), new Player("Test", 10)]
-
-handleWar(fighters);
-
-function handleWar(attackers: IAttacker[]) {
-    attackers.forEach(p => {
-        p.attack(playerOne);
-    })
+abstract class HealthBar implements IHealthBar {
+    get status(): HealthStatus {
+        return this.health === 0 ? 'dead' : 'alive'
+    }
+    abstract get health(): number;
 }
 
-var playerOne = new Player("Sergio", 100);
-var playerTwo = new Player("Chad", 10);
-
-playerOne.attack(playerTwo);
-
-console.log(playerTwo);
-
-// playerOne.attack(playerTwo);
-
-// console.log("Player two has " + playerTwo.health + " health remaining");
+class PlayerHealthBar extends HealthBar implements IPlayerHealthBar {
+    constructor(private attacks: IAttack[]) {
+        super();
+    }
+    register(attack: IAttack) {
+        this.attacks.push(attack);
+        return this;
+    }
+    get health(): number {
+        const damage = this.attacks.reduce((sum, attack) => sum += attack.damage, 0);
+        return 100 - damage;
+    }
+}
