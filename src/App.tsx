@@ -2,7 +2,7 @@ import React from 'react';
 import { addPlayer } from './playerApi';
 import { Form } from './Form';
 import { FormSFC } from './FormSFC';
-import { List } from './List';
+import { MovingList } from './MovingList';
 
 export class App extends React.Component {
     constructor(props) {
@@ -13,8 +13,7 @@ export class App extends React.Component {
         return (
             <div>
                 <h5>Hello, Sergio and Sebas</h5>
-                <List values={["Sebas", "Serge", "Chad"]}/>
-                <List values={["Obed", "Mike"]}/>
+                <MovingList/>
             </div>
         );
     }
