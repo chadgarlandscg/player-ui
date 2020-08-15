@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel src/index.html",
-    "tsc": "tsc index.ts"
+    "tsc": "tsc index.ts --target ES2020"
   },
   "repository": {
     "type": "git",

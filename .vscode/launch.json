@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch TS Program",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}\\index.ts",
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ]
+        },
+        {
             "name": "Launch Program",
             "program": "${workspaceFolder}/index.js",
             "request": "launch",
@@ -21,7 +34,7 @@
             "webRoot": "${workspaceFolder}",
             "breakOnLoad": true,
             "sourceMapPathOverrides": {
-              "../*": "${webRoot}/*"
+                "../*": "${webRoot}/*"
             }
         }
     ]
