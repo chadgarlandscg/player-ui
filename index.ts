@@ -22,13 +22,16 @@ interface IAttacker {
     power: number;
 }
 
+interface IMortal {
+    health: IHealth;
+}
+
 interface IDefender {
     defend: (attack: IAttack) => IAttack;
-    health: IHealth;
     resistance: number;
 }
 
-interface IFighter extends IAttacker, IDefender {
+interface IFighter extends IAttacker, IDefender, IMortal {
     health: IFighterHealth;
 }
 
@@ -40,9 +43,40 @@ interface ICharge {
     price: number;
 }
 
+interface ICurrency {
+    readonly value: number;
+    minus(amount: number): ICurrency;
+    plus(more: ICurrency): ICurrency;
+}
+
+class Currency implements ICurrency {
+    constructor(private _value: number) {
+
+    }
+    minus(amount: number) {
+        const available = this._value - amount < 0 ? this._value : amount;
+        this._value -= available;
+        return new Currency(available);
+    }
+    plus(more: ICurrency) {
+        this._value += more.value;
+        return this;
+    }
+    get value(): number {
+        return this._value;
+    }
+}
+
+interface IGold extends ICurrency {
+}
+
+class Gold extends Currency implements IGold {}
+
 interface IWallet {
-    add(charge: Charge): IWallet;
-    gold: number;
+    add(gold: IGold): IWallet;
+    take(howMany: number): IGold;
+    readonly can: {afford: (howMany: number) => boolean, readonly not: {afford: (howMany: number) => boolean}}
+    readonly gold: number;
 }
 
 interface IBuyer {
@@ -50,7 +84,7 @@ interface IBuyer {
 }
 
 interface IItemStore {
-    transact: (request: IItemPurchaseRequest) => IItem | false;
+    process: (request: IItemPurchaseRequest) => {buyer: IBuyer, item: IItem};
 }
 
 interface IItemPurchaseRequest {
@@ -58,7 +92,7 @@ interface IItemPurchaseRequest {
     buyer: IBuyer;
 }
 
-interface IItem {
+interface IItem extends ICharge {
     value: number;
     type: string;
 }
@@ -108,12 +142,21 @@ class Fighter implements IFighter {
 }
 
 interface IInventory {
-
+    add: (items: IItem[]) => IInventory;
 }
 
 class Inventory {
     items: IItem[];
-    wallet: IWallet;
+}
+
+class ItemStore implements IItemStore {
+    process({buyer, item}: IItemPurchaseRequest) {
+        if (buyer.wallet.can.not.afford(item.value)) {
+            throw new Error(`${buyer.wallet.gold - item.value} more gold required`);
+        }
+        buyer.wallet.take(item.value);
+        return {buyer, item};
+    }
 }
 
 class Charge implements ICharge {
@@ -121,15 +164,34 @@ class Charge implements ICharge {
 }
 
 class Wallet implements IWallet {
-    constructor(private readonly initialGold: number, private readonly charges: ICharge[] = []) {}
-    add(charge: ICharge) {
-        if (this.gold < charge.price) throw new Error("Not enough gold!");
-        this.charges.push(charge);
+    private _gold: IGold;
+    constructor(private readonly initialGold: IGold) {
+        this._gold = initialGold;
+    }
+    add(gold: IGold): IWallet {
+        this._gold.plus(gold);
         return this;
     }
-    get gold(): number {
-        return this.initialGold - this.charges.reduce((sum, charge) => sum += charge.price, 0);
+    take(howMany: number): IGold {
+        return this._gold.minus(howMany);
     }
+    get gold(): number {
+        return this._gold.value;
+    }
+    get can(): {afford: (howMany: number) => boolean, not: {afford: (howMany: number) => boolean}} {
+        return {
+            afford: this.canAfford,
+            not: {
+                afford: this.cannotAfford
+            }
+        }
+    }
+    canAfford(howMany: number): boolean {
+        return this._gold.value > howMany;    
+    }
+    cannotAfford(howMany: number) {
+        return !this.canAfford(howMany);
+    };
 }
 
 class Player extends Fighter implements IPlayer {
@@ -274,8 +336,17 @@ class GameBoard {
     }
 }
 
-const p1: IPlayer = new Player("Sergio", new Wallet(1000));
-const p2: IPlayer = new Player("Chad", new Wallet(1000));
+
+interface IGoldFactory { create(howMuch: number): IGold }
+class GoldFactory implements IGoldFactory {
+    create(howMuch: number): IGold {
+        return new Gold(howMuch);
+    }
+}
+const goldFactory = new GoldFactory();
+
+const p1: IPlayer = new Player("Sergio", new Wallet(goldFactory.create(1000)));
+const p2: IPlayer = new Player("Chad", new Wallet(goldFactory.create(1000)));
 
 const board = new GameBoard([p1, p2]);
 const battle = new Battle(board);
