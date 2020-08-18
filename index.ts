@@ -39,10 +39,6 @@ interface IWall extends IDefender {
 
 }
 
-interface ICharge {
-    price: number;
-}
-
 interface ICurrency {
     readonly value: number;
     minus(amount: number): ICurrency;
@@ -79,25 +75,62 @@ interface IWallet {
     readonly gold: number;
 }
 
-interface IBuyer {
+interface IShopper {
+    inventory: IInventory;
     wallet: IWallet;
 }
 
-interface IItemStore {
-    process: (request: IItemPurchaseRequest) => {buyer: IBuyer, item: IItem};
+interface IShop {
+    accept: (currency: ICurrency) => {
+        inExchangeFor: <I extends IItem>(itemType: ItemType) => I;
+    };
+    inquirePrice(itemType: string): number;
 }
 
-interface IItemPurchaseRequest {
-    item: IItem;
-    buyer: IBuyer;
+enum WeaponType {
+    Stick = "Stick",
+    Sword = "Sword",
 }
 
-interface IItem extends ICharge {
-    value: number;
-    type: string;
+enum ArmorType {
+    Shirt = "Shirt",
+    Shield = "Shield",
 }
 
-interface IPlayer extends IFighter, IBuyer {
+type ItemType = WeaponType | ArmorType;
+
+interface IWeapon extends IItem {
+    power: number;
+}
+
+interface IItem {
+    price: number;
+    type: ItemType;
+}
+
+abstract class Item implements IItem {
+    constructor(public readonly price: number, public readonly type: ItemType) {}
+}
+
+abstract class Weapon extends Item implements IWeapon {
+    constructor(public readonly power, public readonly price: number, public readonly type: ItemType) {
+        super(price, type);
+    }
+}
+
+class Stick extends Weapon implements IWeapon {
+    constructor() {
+        super(3, 1, WeaponType.Stick);
+    }
+}
+
+class Sword extends Weapon implements IWeapon {
+    constructor() {
+        super(10, 100, WeaponType.Sword);
+    }
+}
+
+interface IPlayer extends IFighter, IShopper {
     name: string;
 }
 
@@ -142,31 +175,75 @@ class Fighter implements IFighter {
 }
 
 interface IInventory {
-    add: (items: IItem[]) => IInventory;
-}
-
-class Inventory {
+    add: (item: IItem) => IInventory;
     items: IItem[];
 }
 
-class ItemStore implements IItemStore {
-    process({buyer, item}: IItemPurchaseRequest) {
-        if (buyer.wallet.can.not.afford(item.value)) {
-            throw new Error(`${buyer.wallet.gold - item.value} more gold required`);
-        }
-        buyer.wallet.take(item.value);
-        return {buyer, item};
+class Inventory implements IInventory {
+    constructor(public readonly items: IItem[] = []) {}
+    add(item: IItem) {
+        this.items.push(item);
+        return this;
     }
 }
 
-class Charge implements ICharge {
-    constructor(public readonly price: number) {}
+interface IItemFactory {
+    create<I extends IItem>(itemType: ItemType): I;
+}
+
+class ItemFactory implements IItemFactory {
+    constructor(private readonly _weaponFactory: IWeaponFactory) {}
+    create<I extends IItem>(itemType: ItemType): I {
+        if (Object.values(WeaponType).find(t => t === itemType)) {
+            return this._weaponFactory.create<I>(itemType);
+        }
+    }
+}
+
+interface IWeaponFactory {
+    create<W extends IItem>(type: ItemType): W;
+}
+
+class WeaponFactory implements IWeaponFactory {
+    create<W extends IItem>(type: WeaponType): W {
+        switch(type) {
+            case(WeaponType.Stick): return (new Stick() as unknown) as W;
+            case(WeaponType.Sword): return (new Sword() as unknown) as W;
+            default: return null;
+        }
+    }
+}
+
+class Shop implements IShop {
+    private _customerMoney: ICurrency;
+    constructor(private readonly _itemFactory: IItemFactory) {
+        this.provideItem = this.provideItem.bind(this);
+    }
+    accept(money: ICurrency) {
+        this._customerMoney = this._customerMoney?.plus(money) || money;
+        return {
+            inExchangeFor: this.provideItem
+        }
+    }
+    provideItem<I extends IItem>(itemType: ItemType) {
+        const item = this._itemFactory.create<I>(itemType);
+        if (this._customerMoney.value < item.price) {
+            throw new Error(`${this._customerMoney.value - item.price} more gold required`);
+        }
+        return item;
+    }
+    inquirePrice(itemType: ItemType) {
+        const item = this._itemFactory.create<IItem>(itemType);
+        return item.price;
+    }
 }
 
 class Wallet implements IWallet {
     private _gold: IGold;
     constructor(private readonly initialGold: IGold) {
         this._gold = initialGold;
+        this.canAfford = this.canAfford.bind(this);
+        this.cannotAfford = this.cannotAfford.bind(this);
     }
     add(gold: IGold): IWallet {
         this._gold.plus(gold);
@@ -195,7 +272,7 @@ class Wallet implements IWallet {
 }
 
 class Player extends Fighter implements IPlayer {
-    constructor(public readonly name: string, public readonly wallet: IWallet, attacksTaken: IAttack[] = [], attacksDealt: IAttack[] = []) {
+    constructor(public readonly name: string, public readonly inventory: IInventory, public readonly wallet: IWallet, attacksTaken: IAttack[] = [], attacksDealt: IAttack[] = []) {
         super(attacksTaken, attacksDealt);
     }
 }
@@ -248,7 +325,7 @@ class TurnActionResult<T> implements ITurnActionResult {
 }
 
 interface ITurnAction {
-    perform(): ITurnActionResult;
+    tryToPerform(): ITurnActionResult;
 }
 
 abstract class TurnAction<T> implements ITurnAction {
@@ -257,7 +334,12 @@ abstract class TurnAction<T> implements ITurnAction {
     }
     protected _context: T;
     protected abstract isValid(): boolean;
-    abstract perform(): ITurnActionResult;
+    tryToPerform(): ITurnActionResult {
+        if (this.isValid()) {
+            return this.perform();
+        }
+    }
+    protected abstract perform(): ITurnActionResult;
 }
 
 class AttackActionRequest {
@@ -280,43 +362,88 @@ class AttackActionResult extends TurnActionResult<IDefender> implements IAttackA
 }
 
 class AttackAction extends TurnAction<AttackActionRequest> implements IAttackAction {
-    constructor(_context: AttackActionRequest) {
-        super(_context);
-    }
     protected isValid() {
         return !this._context.attacker.hasAttacked;
     }
+    protected perform() {
+        const damagedDefender = this._context.attacker.attack(this._context.defender);
+        return new AttackActionResult(damagedDefender);
+    }
+}
+
+interface IItemPurchaseAction extends ITurnAction {}
+
+interface IItemPurchaseResultPayload {
+    shopper: IShopper;
+    shop: IShop;
+}
+
+interface IItemPurchaseResult extends ITurnActionResult {
+    payload: IItemPurchaseResultPayload;
+}
+
+class ItemPurchaseResult extends TurnActionResult<IItemPurchaseResultPayload> implements IItemPurchaseResult {
+    // constructor(payload: IDefender) {
+    //     super(payload);
+    // }
+}
+
+class ItemPurchaseRequest<I extends Item> {
+    constructor(
+        public itemType: ItemType,
+        public shopper: IShopper,
+        public shop: IShop,
+    ) {}
+}
+
+class ItemPurchaseAction<I extends IItem> extends TurnAction<ItemPurchaseRequest<I>> implements IItemPurchaseAction {
+    protected isValid() {
+        const itemPrice = this._context.shop.inquirePrice(this._context.itemType);
+        return !!this._context.shopper.wallet.can.afford(itemPrice);
+    }
     perform() {
-        if (this.isValid()) {
-            const damagedDefender = this._context.attacker.attack(this._context.defender);
-            return new AttackActionResult(damagedDefender);
-        }
+        const itemPrice = this._context.shop.inquirePrice(this._context.itemType);
+        const money = this._context.shopper.wallet.take(itemPrice);
+        const item = this._context.shop.accept(money).inExchangeFor(this._context.itemType);
+        this._context.shopper.inventory.add(item);
+        return new ItemPurchaseResult({shopper: this._context.shopper, shop: this._context.shop});
     }
 }
 
 interface ITurn {
-    playout: (actions?: ITurnAction[]) => ITurnActionResult[];
+    end: (actions?: ITurnAction[]) => ITurn;
+    results: ITurnActionResult[];
 }
 
 class Turn implements ITurn {
-    constructor(protected readonly actions: ITurnAction[]) {}
-    playout(actions?: ITurnAction[]): ITurnActionResult[] {
-        const actionsToPlay = actions || this.actions;
-        const results = actionsToPlay.map(action => action.perform());
-        return results;
+    constructor(protected readonly actions: ITurnAction[] = [], public readonly results: ITurnActionResult[] = []) {}
+    add(newActions: ITurnAction[] = []): ITurn {
+        if (this.results.length) {
+            throw new Error("Turn already played!");
+        }
+        this.actions.concat(newActions);
+        return this;
+    }
+    end(newActions: ITurnAction[] = []): ITurn {
+        this.add(newActions);
+        const results = this.actions.map(action => action.tryToPerform());
+        this.results.concat(results);
+        return this;
     }
 }
 
 interface IBattle {
-    proceedTo: (turn: ITurn) => ITurn[];
+    playout: (turn: ITurn) => IBattle;
+    readonly board: IGameBoard;
 }
 
 class Battle implements IBattle {
-    constructor(private readonly board: IGameBoard, private readonly turns: ITurn[] = []) {}
+    constructor(public readonly board: IGameBoard, private readonly turns: ITurn[] = []) {}
 
-    proceedTo(turn: ITurn): ITurn[] {
-        turn.playout();
-        return 
+    playout(turn: ITurn): IBattle {
+        const completedTurn = turn.end();
+        this.turns.push(completedTurn);
+        return this;
     }
 }
 
@@ -336,6 +463,14 @@ class GameBoard {
     }
 }
 
+// FACTORIES
+
+interface IInventoryFactory { create(): IInventory }
+class InventoryFactory implements IInventoryFactory {
+    create(): IInventory {
+        return new Inventory();
+    }
+}
 
 interface IGoldFactory { create(howMuch: number): IGold }
 class GoldFactory implements IGoldFactory {
@@ -343,16 +478,51 @@ class GoldFactory implements IGoldFactory {
         return new Gold(howMuch);
     }
 }
-const goldFactory = new GoldFactory();
 
-const p1: IPlayer = new Player("Sergio", new Wallet(goldFactory.create(1000)));
-const p2: IPlayer = new Player("Chad", new Wallet(goldFactory.create(1000)));
+interface IPlayerFactory { create(name: string): IPlayer }
+class PlayerFactory implements IPlayerFactory {
+    constructor(private readonly _inventoryFactory: IInventoryFactory, private readonly _walletFactory: IWalletFactory) {}
+    create(name: string): IPlayer {
+        return new Player(name, this._inventoryFactory.create(), this._walletFactory.create());
+    }
+}
+
+interface IWalletFactory { create(): IWallet }
+class WalletFactory implements IWalletFactory {
+    constructor(private readonly _goldFactory: IGoldFactory) {}
+    create(): IWallet {
+        return new Wallet(this._goldFactory.create(1000));
+    }
+}
+
+interface ITurnFactory { create(actions: ITurnAction[]): ITurn }
+class TurnFactory implements ITurnFactory {
+    create(actions: ITurnAction[]): ITurn {
+        return new Turn(actions);
+    }
+}
+
+const weaponFactory = new WeaponFactory();
+const itemFactory = new ItemFactory(weaponFactory);
+const inventoryFactory = new InventoryFactory();
+
+const goldFactory = new GoldFactory();
+const walletFactory = new WalletFactory(goldFactory);
+const playerFactory = new PlayerFactory(inventoryFactory, walletFactory);
+const p1 = playerFactory.create("Sergio");
+const p2 = playerFactory.create("Chad");
+
+const shop = new Shop(itemFactory);
+
+// const p1: IPlayer = new Player("Sergio", new Wallet(goldFactory.create(1000)));
+// const p2: IPlayer = new Player("Chad", new Wallet(goldFactory.create(1000)));
 
 const board = new GameBoard([p1, p2]);
 const battle = new Battle(board);
+const itemPurchaseAction = new ItemPurchaseAction(new ItemPurchaseRequest(WeaponType.Stick, p1, shop));
 const attackAction = new AttackAction(new AttackActionRequest(p1, p2));
-const nextTurn = new Turn([attackAction]);
-battle.proceedTo(nextTurn);
+const nextTurn = new Turn([itemPurchaseAction, attackAction]);
+const continuedBattle = battle.playout(nextTurn);
 console.log(p2.health.missing);
 console.log(p2.health.remaining);
 console.log(board.status);
