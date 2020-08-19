@@ -1,4 +1,4 @@
-interface IAttack {
+export interface IAttack {
     attacker: IAttacker;
     defender: IDefender;
     damage: number;
@@ -26,7 +26,7 @@ interface IMortal {
     health: IHealth;
 }
 
-interface IDefender {
+export interface IDefender {
     defend: (attack: IAttack) => IAttack;
     resistance: number;
 }
@@ -134,7 +134,7 @@ interface IPlayer extends IFighter, IShopper {
     name: string;
 }
 
-class Attack implements IAttack {
+export class Attack implements IAttack {
     constructor(public readonly attacker: IAttacker, public defender: IDefender = null) {}
     get damage() {
         if (!this.defender) { return NaN; }
@@ -142,9 +142,9 @@ class Attack implements IAttack {
     }
 }
 
-class Fighter implements IFighter {
+export class Fighter implements IFighter {
     protected _health: IFighterHealth;
-    constructor(attacksTaken: IAttack[] = [], private readonly attacksDealt: IAttack[]) {
+    constructor(attacksTaken: IAttack[] = [], private readonly attacksDealt: IAttack[] = []) {
         this._health = new FighterHealth(this, attacksTaken);
     }
     protected get basePower() { return 2.0 };
@@ -238,7 +238,7 @@ class Shop implements IShop {
     }
 }
 
-class Wallet implements IWallet {
+export class Wallet implements IWallet {
     private _gold: IGold;
     constructor(private readonly initialGold: IGold) {
         this._gold = initialGold;
@@ -473,7 +473,7 @@ class InventoryFactory implements IInventoryFactory {
 }
 
 interface IGoldFactory { create(howMuch: number): IGold }
-class GoldFactory implements IGoldFactory {
+export class GoldFactory implements IGoldFactory {
     create(howMuch: number): IGold {
         return new Gold(howMuch);
     }
@@ -487,11 +487,11 @@ class PlayerFactory implements IPlayerFactory {
     }
 }
 
-interface IWalletFactory { create(): IWallet }
-class WalletFactory implements IWalletFactory {
-    constructor(private readonly _goldFactory: IGoldFactory) {}
+interface IWalletFactory { create(initialGold?: number): IWallet }
+export class WalletFactory implements IWalletFactory {
+    constructor(private readonly _goldFactory: IGoldFactory, private readonly _initialGold: number = 1000) {}
     create(): IWallet {
-        return new Wallet(this._goldFactory.create(1000));
+        return new Wallet(this._goldFactory.create(this._initialGold));
     }
 }
 

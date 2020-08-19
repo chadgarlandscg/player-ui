@@ -3,7 +3,7 @@ export type ListProps = {
     values: string[];
 }
 export function List(props: ListProps) {
-    var listElements = props.values.map(v => <ListElement value={v}/>);
+    var listElements = props.values.map((v, i) => <ListElement key={i} value={v}/>);
     return (
         <div>
             {listElements}
