@@ -1,7 +1,9 @@
 import React from 'react';
+import { FormSFC } from './FormSFC';
 
 type FormProps = {
     buttonTitle: string;
+    onSubmit: (formState: FormState) => void;
 }
 
 type FormState = {
@@ -15,7 +17,6 @@ export class Form extends React.Component<FormProps, FormState> {
             inputValue: ""
         };
         this.onInputChange = this.onInputChange.bind(this);
-        this.onButtonClick = this.onButtonClick.bind(this);
     }
 
     onInputChange(event) {
@@ -26,16 +27,14 @@ export class Form extends React.Component<FormProps, FormState> {
         console.log(event.target.value);
     }
 
-    onButtonClick() {
-        console.log(this.state);
-    }
-
     render() {
-        return (
-            <div>
-                <input value={this.state.inputValue} onChange={this.onInputChange}/>
-                <button onClick={this.onButtonClick}>{this.props.buttonTitle || "Test!"}</button>
-            </div>
-        );
+        return <FormSFC
+            buttonTitle={this.props.buttonTitle}
+            inputValue={this.state.inputValue}
+            onButtonClick={(event) => {
+                this.props.onSubmit(this.state);
+            }}
+            onInputChange={this.onInputChange}
+        />
     }
 }

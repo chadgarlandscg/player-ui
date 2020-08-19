@@ -2,21 +2,20 @@ import React from 'react';
 
 export type ListProps = {
     values: string[];
-    onElementClicked: (index: number) => void;
+    onElementClicked?: (index: number) => void;
 }
 export function List(props: ListProps) {
-    const fromValueToListElement = (v: string, i: number) => {
+    var listElements = props.values.map((value, index) => {
         return (
             <ListElement
-                value={v}
+                key={index}
+                value={value}
                 onClick={(event) => {
-                    props.onElementClicked(i);
+                    props.onElementClicked(index);
                 }}
             />
         )
-    }
-
-    var listElements = props.values.map(fromValueToListElement);
+    });
     return (
         <div>
             {listElements}
@@ -26,13 +25,13 @@ export function List(props: ListProps) {
 
 type ListElementProps = {
     value: string;
-    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+    onClick: (event: React.MouseEvent<HTMLParagraphElement>) => void;
 }
 
 function ListElement(props: ListElementProps) {
     return (
-        <button onClick={props.onClick}>
+        <p onClick={props.onClick}>
             {props.value}
-        </button>
+        </p>
     )
 }

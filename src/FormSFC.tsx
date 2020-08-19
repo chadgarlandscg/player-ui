@@ -3,7 +3,7 @@ import React from 'react';
 type FormSFCProps = {
     inputValue: string;
     onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onButtonClick: () => void;
+    onButtonClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
     buttonTitle: string;
 }
 
