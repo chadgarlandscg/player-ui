@@ -80,9 +80,9 @@ interface IShopper {
     wallet: IWallet;
 }
 
-interface IShop {
+interface IShop<I extends IItem> {
     accept: (currency: ICurrency) => {
-        inExchangeFor: <I extends IItem>(itemType: ItemType) => I;
+        inExchangeFor: <T extends I>(itemType: ItemType) => T;
     };
     inquirePrice(itemType: string): number;
 }
@@ -187,36 +187,27 @@ class Inventory implements IInventory {
     }
 }
 
-interface IItemFactory {
-    create<I extends IItem>(itemType: ItemType): I;
+interface IItemFactory<I extends IItem> {
+    create<T extends I>(itemType: ItemType): T;
 }
 
-class ItemFactory implements IItemFactory {
-    constructor(private readonly _weaponFactory: IWeaponFactory) {}
-    create<I extends IItem>(itemType: ItemType): I {
-        if (Object.values(WeaponType).find(t => t === itemType)) {
-            return this._weaponFactory.create<I>(itemType);
-        }
-    }
-}
-
-interface IWeaponFactory {
-    create<W extends IItem>(type: ItemType): W;
+interface IWeaponFactory extends IItemFactory<IWeapon> {
+    create<W extends IWeapon>(type: ItemType): W;
 }
 
 class WeaponFactory implements IWeaponFactory {
-    create<W extends IItem>(type: WeaponType): W {
+    create<W extends IWeapon>(type: WeaponType): W {
         switch(type) {
-            case(WeaponType.Stick): return (new Stick() as unknown) as W;
-            case(WeaponType.Sword): return (new Sword() as unknown) as W;
+            case(WeaponType.Stick): return new Stick() as W;
+            case(WeaponType.Sword): return new Sword() as W;
             default: return null;
         }
     }
 }
 
-class Shop implements IShop {
+abstract class Shop<I extends IItem> implements IShop<I> {
     private _customerMoney: ICurrency;
-    constructor(private readonly _itemFactory: IItemFactory) {
+    constructor(private readonly _itemFactory: IItemFactory<I>) {
         this.provideItem = this.provideItem.bind(this);
     }
     accept(money: ICurrency) {
@@ -225,18 +216,22 @@ class Shop implements IShop {
             inExchangeFor: this.provideItem
         }
     }
-    provideItem<I extends IItem>(itemType: ItemType) {
-        const item = this._itemFactory.create<I>(itemType);
+    protected provideItem<T extends I>(itemType: ItemType) {
+        const item = this._itemFactory.create<T>(itemType);
         if (this._customerMoney.value < item.price) {
             throw new Error(`${this._customerMoney.value - item.price} more gold required`);
         }
         return item;
     }
     inquirePrice(itemType: ItemType) {
-        const item = this._itemFactory.create<IItem>(itemType);
+        const item = this._itemFactory.create<I>(itemType);
         return item.price;
     }
 }
+
+interface IWeaponShop extends IShop<IWeapon> {}
+
+class WeaponShop extends Shop<IWeapon> implements IWeaponShop {}
 
 export class Wallet implements IWallet {
     private _gold: IGold;
@@ -375,7 +370,7 @@ interface IItemPurchaseAction extends ITurnAction {}
 
 interface IItemPurchaseResultPayload {
     shopper: IShopper;
-    shop: IShop;
+    shop: IShop<Item>;
 }
 
 interface IItemPurchaseResult extends ITurnActionResult {
@@ -392,7 +387,7 @@ class ItemPurchaseRequest<I extends Item> {
     constructor(
         public itemType: ItemType,
         public shopper: IShopper,
-        public shop: IShop,
+        public shop: IShop<I>,
     ) {}
 }
 
@@ -503,7 +498,6 @@ class TurnFactory implements ITurnFactory {
 }
 
 const weaponFactory = new WeaponFactory();
-const itemFactory = new ItemFactory(weaponFactory);
 const inventoryFactory = new InventoryFactory();
 
 const goldFactory = new GoldFactory();
@@ -512,14 +506,14 @@ const playerFactory = new PlayerFactory(inventoryFactory, walletFactory);
 const p1 = playerFactory.create("Sergio");
 const p2 = playerFactory.create("Chad");
 
-const shop = new Shop(itemFactory);
+const shop = new WeaponShop(weaponFactory);
 
 // const p1: IPlayer = new Player("Sergio", new Wallet(goldFactory.create(1000)));
 // const p2: IPlayer = new Player("Chad", new Wallet(goldFactory.create(1000)));
 
 const board = new GameBoard([p1, p2]);
 const battle = new Battle(board);
-const itemPurchaseAction = new ItemPurchaseAction(new ItemPurchaseRequest(WeaponType.Stick, p1, shop));
+const itemPurchaseAction = new ItemPurchaseAction(new ItemPurchaseRequest<Stick>(WeaponType.Stick, p1, shop));
 const attackAction = new AttackAction(new AttackActionRequest(p1, p2));
 const nextTurn = new Turn([itemPurchaseAction, attackAction]);
 const continuedBattle = battle.playout(nextTurn);
