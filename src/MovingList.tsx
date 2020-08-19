@@ -40,9 +40,7 @@ export class MovingList extends React.Component<{}, MovingListState> {
                 </div>
 
                 <button onClick={() => {
-                    await axios.post("http://localhost:9999/players/3/potions", this.state.second);
-                    changeScreens("/battleground");
-
+                    console.log(this.state);
                 }}>Check out</button>
 
             </div>
