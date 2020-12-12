@@ -17,8 +17,8 @@ const PathToComponent: {[key in Paths]: ReactNode} = {
 
 const RoutedComponents: React.FC = () => {
   return <>
-    {Object.entries(PathToComponent).map(([route, component]) => (
-      <Route path={route} exact={true}>
+    {Object.entries(PathToComponent).map(([path, component]) => (
+      <Route path={path} exact={true}>
         {component}
       </Route>
     ))}
