@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import ReactDOM from "react-dom";
 import {
   BrowserRouter as Router,
@@ -6,14 +6,29 @@ import {
   Route
 } from "react-router-dom";
 import { Home } from "../Home/Home";
-import { HomeRoute } from "./HomeRoute";
+
+enum Paths {
+  Home = '/',
+}
+
+const PathToComponent: {[key in Paths]: ReactNode} = {
+  [Paths.Home]: Home,
+}
+
+const RoutedComponents: React.FC = () => {
+  return <>
+    {Object.entries(PathToComponent).map(([route, component]) => (
+      <Route path={route} exact={true}>
+        {component}
+      </Route>
+    ))}
+  </>;
+}
 
 export const Routes: React.FC = () => {
   return (
-    <div>
-      <Switch>
-        <HomeRoute />
-      </Switch>
-    </div>
+    <Switch>
+      <RoutedComponents />
+    </Switch>
   );
 }
