@@ -1,8 +1,9 @@
 import React from 'react';
+import { CardCarousel } from '../../../Components/Carousels/CardCarousel';
 
 export const Home: React.FC = () => {
     return (
-        <h1>Something here...</h1>
+        <CardCarousel />
     );
 }
 
