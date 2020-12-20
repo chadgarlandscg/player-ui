@@ -8,6 +8,12 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
       maxWidth: 'none',
     },
+    rootContainer: {
+      width: 'max-content',
+    },
+    scrollContainer: {
+      overflowX: 'scroll',
+    },
     card: {
       height: 140,
       width: 100,
@@ -19,16 +25,13 @@ export const HorizontalGrid: React.FC<{children: React.ReactNodeArray}> = ({chil
   const classes = useStyles();
 
   return (
-    <Grid container className={classes.root} spacing={2}>
-      <Grid item xs={12}>
-        <Grid container justify="center" spacing={10}>
-          {children.map((child, i) => (
-            <Grid key={i} item>
-              {child}
-            </Grid>
-          ))}
-        </Grid>
-      </Grid>
-    </Grid>
+    <div className={classes.scrollContainer}>
+      <div className={classes.rootContainer}>
+            {children.map((child, i) => (
+                <>{child}</>
+            ))}
+      </div>
+    </div>
   );
+
 }
