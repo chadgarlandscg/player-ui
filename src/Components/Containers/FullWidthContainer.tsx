@@ -2,12 +2,11 @@ import { Container } from '@material-ui/core';
 import React, { ReactNode } from 'react';
 
 interface FullWidthContainerProps {
-    children: ReactNode;
 }
 
-export const FullWidthContainer: React.FC = ({children}) => {
+export const FullWidthContainer: React.FC<FullWidthContainerProps> = ({children}) => {
     return (
-        <Container maxWidth="sm">
+        <Container>
             {children}
         </Container>
     );

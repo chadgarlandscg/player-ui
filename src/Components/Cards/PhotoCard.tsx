@@ -10,18 +10,20 @@ import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles({
   root: {
-    maxWidth: 200,
+    maxWidth: 250,
   },
   media: {
-    height: 140,
+    height: 100,
   },
 });
 
 interface PhotoCardProps {
-    text: string;
+    image?: string;
+    title: string;
+    description?: string;
 }
 
-export const PhotoCard: React.FC<PhotoCardProps> = ({text}) => {
+export const PhotoCard: React.FC<PhotoCardProps> = ({image, title, description}) => {
   const classes = useStyles();
 
   return (
@@ -29,25 +31,23 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({text}) => {
       <CardActionArea>
         <CardMedia
           className={classes.media}
-          image="/static/images/cards/contemplative-reptile.jpg"
-          title="Contemplative Reptile"
+          image={image}
         />
         <CardContent>
           <Typography gutterBottom variant="h5" component="h2">
-            {text}
+            {title}
           </Typography>
           <Typography variant="body2" color="textSecondary" component="p">
-            Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging
-            across all continents except Antarctica
+            {description}
           </Typography>
         </CardContent>
       </CardActionArea>
       <CardActions>
         <Button size="small" color="primary">
-          Share
+          Quick Start
         </Button>
         <Button size="small" color="primary">
-          Learn More
+          Customize
         </Button>
       </CardActions>
     </Card>
