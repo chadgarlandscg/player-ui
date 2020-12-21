@@ -20,6 +20,7 @@ export const Home: React.FC = () => {
         id: 1,
         description: "4/6 in Lobby",
         title: "Rock, Paper, Scissors",
+        isPriority: true,
         onClick: () => history.push(`/games/${1}`)
     },{
         id: 100,

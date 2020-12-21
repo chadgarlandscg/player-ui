@@ -8,6 +8,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { Link, useHistory, useLocation } from 'react-router-dom';
+import PriorityHighIcon from '@material-ui/icons/PriorityHigh';
 
 const useStyles = makeStyles({
   root: {
@@ -25,14 +26,16 @@ export interface PhotoCardProps {
     image?: string;
     title: string;
     description?: string;
+    isPriority?: boolean;
     onClick?: (event: React.SyntheticEvent) => void;
 }
 
-export const PhotoCard: React.FC<PhotoCardProps> = ({image, title, description, onClick}) => {
+export const PhotoCard: React.FC<PhotoCardProps> = ({image, title, description, isPriority, onClick}) => {
   const classes = useStyles();
 
   return (
     <Card className={classes.root} onClick={onClick}>
+      {isPriority && <PriorityHighIcon color="secondary"/>}
       <CardActionArea>
         {image && <CardMedia
           className={classes.media}
