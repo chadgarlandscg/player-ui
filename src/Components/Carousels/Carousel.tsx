@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 'max-content',
     },
     scrollContainer: {
-      overflowX: 'scroll',
+      overflowX: 'auto',
     },
     card: {
       height: 140,
