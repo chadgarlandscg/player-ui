@@ -19,7 +19,7 @@ const useStyles = makeStyles({
   },
 });
 
-interface PhotoCardProps {
+export interface PhotoCardProps {
     image?: string;
     title: string;
     description?: string;
@@ -31,10 +31,10 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({image, title, description})
   return (
     <Card className={classes.root}>
       <CardActionArea>
-        <CardMedia
+        {image && <CardMedia
           className={classes.media}
           image={image}
-        />
+        />}
         <CardContent>
           <Typography gutterBottom variant="h5" component="h2">
             {title}

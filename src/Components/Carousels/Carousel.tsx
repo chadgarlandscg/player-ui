@@ -27,9 +27,7 @@ export const Carousel: React.FC<{children: React.ReactNodeArray}> = ({children})
   return (
     <Box className={classes.scrollContainer}>
       <Box className={classes.rootContainer}>
-            {children.map((child, i) => (
-                <>{child}</>
-            ))}
+        {children}
       </Box>
     </Box>
   );
