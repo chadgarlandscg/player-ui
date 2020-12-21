@@ -6,13 +6,16 @@ import {
   Route
 } from "react-router-dom";
 import { Home } from "../Home/Home";
+import { NewGame } from "../NewGame/NewGame";
 
 enum Paths {
   Home = '/',
+  RockPaperScissors = '/rock-paper-scissors'
 }
 
 const PathToComponent: {[key in Paths]: ReactNode} = {
   [Paths.Home]: <Home/>,
+  [Paths.RockPaperScissors]: <NewGame/>
 }
 
 const RoutedComponents: React.FC = () => {
