@@ -1,6 +1,6 @@
 import React from 'react';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
+import { Box, Container } from '@material-ui/core';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -21,17 +21,16 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export const HorizontalGrid: React.FC<{children: React.ReactNodeArray}> = ({children}) => {
+export const Carousel: React.FC<{children: React.ReactNodeArray}> = ({children}) => {
   const classes = useStyles();
 
   return (
-    <div className={classes.scrollContainer}>
-      <div className={classes.rootContainer}>
+    <Box className={classes.scrollContainer}>
+      <Box className={classes.rootContainer}>
             {children.map((child, i) => (
                 <>{child}</>
             ))}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
-
 }

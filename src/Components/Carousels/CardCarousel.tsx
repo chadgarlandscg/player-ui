@@ -1,6 +1,6 @@
 import React from 'react';
 import { PhotoCard } from '../Cards/PhotoCard';
-import { HorizontalGrid } from '../Grids/HorizontalGrid'
+import { Carousel } from './Carousel'
 
 export const CardCarousel: React.FC = () => {
   const card = {
@@ -9,7 +9,7 @@ export const CardCarousel: React.FC = () => {
   };
 
   return (
-    <HorizontalGrid>
+    <Carousel>
         {[
             <PhotoCard {...card}/>,
             <PhotoCard title="Test" />,
@@ -19,6 +19,6 @@ export const CardCarousel: React.FC = () => {
             <PhotoCard title="Next" />,
             <PhotoCard title="Next" />
         ]}
-    </HorizontalGrid>
+    </Carousel>
   );
 }
