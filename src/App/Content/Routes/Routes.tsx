@@ -12,7 +12,7 @@ enum Paths {
 }
 
 const PathToComponent: {[key in Paths]: ReactNode} = {
-  [Paths.Home]: Home,
+  [Paths.Home]: <Home/>,
 }
 
 const RoutedComponents: React.FC = () => {

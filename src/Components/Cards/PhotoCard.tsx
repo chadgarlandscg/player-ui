@@ -7,13 +7,15 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
+import { Link, useHistory, useLocation } from 'react-router-dom';
 
 const useStyles = makeStyles({
   root: {
-    maxWidth: 250,
+    maxWidth: 300,
+    height: 200,
     display: 'inline-block',
     margin: '10px'
-,  },
+  },
   media: {
     height: 100,
   },
@@ -23,13 +25,14 @@ export interface PhotoCardProps {
     image?: string;
     title: string;
     description?: string;
+    onClick?: (event: React.SyntheticEvent) => void;
 }
 
-export const PhotoCard: React.FC<PhotoCardProps> = ({image, title, description}) => {
+export const PhotoCard: React.FC<PhotoCardProps> = ({image, title, description, onClick}) => {
   const classes = useStyles();
 
   return (
-    <Card className={classes.root}>
+    <Card className={classes.root} onClick={onClick}>
       <CardActionArea>
         {image && <CardMedia
           className={classes.media}
@@ -46,7 +49,7 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({image, title, description})
       </CardActionArea>
       <CardActions>
         <Button size="small" color="primary">
-          Quick Start
+          <Link to="/test">Test</Link>
         </Button>
         <Button size="small" color="primary">
           Customize

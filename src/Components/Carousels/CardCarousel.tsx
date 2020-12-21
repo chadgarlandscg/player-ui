@@ -5,7 +5,7 @@ import { Carousel } from './Carousel'
 
 interface CardCarouselProps {
   title: string;
-  cards: PhotoCardProps[]
+  cards: PhotoCardProps[];
 }
 
 export const CardCarousel: React.FC<CardCarouselProps> = ({title, cards}) => {

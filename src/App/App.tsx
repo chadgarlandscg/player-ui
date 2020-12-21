@@ -17,7 +17,7 @@ export const App: React.FC = () => {
         <BrowserRouter>
             <ThemeProvider theme={theme}>
                 <Header />
-                    <Content />
+                <Content />
                 <Footer />
             </ThemeProvider>
         </BrowserRouter>
