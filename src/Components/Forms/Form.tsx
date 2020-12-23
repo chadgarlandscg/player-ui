@@ -1,7 +1,8 @@
 import React from 'react'
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import TextField from '@material-ui/core/TextField';
 import { TextInput } from '../Inputs/TextInput';
+import { MarkedSlider, MarkedSliderProps } from '../Inputs/MarkedSlider';
+import { PrimaryButton } from '../Buttons/PrimaryButton';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -15,14 +16,19 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface FormProps {
-    inputFields: string[];
+    inputFields?: string[];
+    sliders?: MarkedSliderProps[];
+    submitText: string;
+    onSubmit: (event: React.SyntheticEvent<HTMLButtonElement>) => void;
 }
 
-export const Form: React.FC<FormProps> = ({inputFields}) => {
+export const Form: React.FC<FormProps> = ({inputFields, sliders, submitText, onSubmit}) => {
     const classes = useStyles();
     return (
         <form className={classes.root} noValidate autoComplete="off">
             {inputFields.map((inputField, i) => <TextInput key={i} label={inputField} />)}
+            {sliders.map((slider, i) => <MarkedSlider key={i} {...slider} />)}
+            <PrimaryButton text={submitText} onClick={onSubmit}/>
         </form>
     );
 }
