@@ -9,6 +9,7 @@ import { SubTitle } from '../Labels/SubTitle';
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
         root: {
+            marginTop: '50px',
             height: '50%'
         },
         gridRoot: {
@@ -42,19 +43,19 @@ export const Form: React.FC<FormProps> = ({title, inputFields, sliders, submitTe
                     className={classes.gridRoot}
                     container
                     direction="row"
-                    alignItems="stretch"
-                    justify="space-between"
+                    alignItems="center"
+                    justify="center"
                 >
                         {title && <Grid item xs={12}>
                             <SubTitle text={title}/>
                             <Divider/>
                         </Grid>}
-                        {inputFields.map((inputField, i) => {
+                        {!!inputFields?.length && inputFields.map((inputField, i) => {
                             return <Grid key={i} item xs={12}>
                                 <TextInput className={classes.fullWidth} label={inputField} />
                             </Grid>
                         })}
-                        {sliders.map((slider, i) => {
+                        {!!sliders?.length && sliders.map((slider, i) => {
                             return <Grid key={i} item xs={12}>
                                 <MarkedSlider {...slider} />
                             </Grid>
