@@ -14,9 +14,6 @@ export interface MarkedSliderProps {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
-      width: 300,
-    },
     margin: {
       height: theme.spacing(3),
     },
@@ -27,19 +24,20 @@ export const MarkedSlider: React.FC<MarkedSliderProps> = ({title, min, max, step
   const classes = useStyles();
 
   return (
-    <div className={classes.root}>
+    <>
       <Typography gutterBottom>
         {title}
       </Typography>
       <Slider
         defaultValue={init || min}
         valueLabelDisplay="auto"
+        color="secondary"
         step={step}
         min={min}
         max={max}
         marks={marks || toSimpleMarks(min, max)}
       />
-    </div>
+    </>
   );
 }
 

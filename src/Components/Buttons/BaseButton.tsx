@@ -5,11 +5,12 @@ export interface BaseButtonProps {
     text?: string;
     onClick: (event: React.SyntheticEvent<HTMLButtonElement>) => void;
     variant: "text" | "contained" | "outlined";
+    className?: string;
 }
 
-export const BaseButton: React.FC<BaseButtonProps> = ({variant, text, onClick, children}) => {
+export const BaseButton: React.FC<BaseButtonProps> = ({variant, text, onClick, children, className}) => {
     return (
-      <Button variant={variant} size="small" color="primary" onClick={onClick}>
+      <Button className={className} variant={variant} size="small" color="primary" onClick={onClick}>
         {text || children}
       </Button>
     )

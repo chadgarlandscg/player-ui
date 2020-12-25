@@ -4,10 +4,11 @@ import TextField from '@material-ui/core/TextField';
 
 interface TextInputProps {
     label: string;
+    className?: string;
 }
 
-export const TextInput: React.FC<TextInputProps> = ({label}) => {
+export const TextInput: React.FC<TextInputProps> = ({label, className}) => {
     return (
-        <TextField label={label} variant="outlined" />
+        <TextField className={className} label={label} variant="outlined" />
     );
 }
