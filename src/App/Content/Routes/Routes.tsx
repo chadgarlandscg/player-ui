@@ -6,18 +6,18 @@ import {
   Route
 } from "react-router-dom";
 import { Enter } from "../Enter/Enter";
-import { Home } from "../Home/Home";
+import { ConnectedHome } from "../Home/ConnectedHome";
 import { NewGame } from "../NewGame/NewGame";
 
 enum Paths {
   Home = '/home',
-  RockPaperScissors = '/rock-paper-scissors',
+  NewGame = '/new-game',
   Enter = '/'
 }
 
 const PathToComponent: {[key in Paths]: ReactNode} = {
-  [Paths.Home]: <Home/>,
-  [Paths.RockPaperScissors]: <NewGame/>,
+  [Paths.Home]: <ConnectedHome/>,
+  [Paths.NewGame]: <NewGame/>,
   [Paths.Enter]: <Enter/>
 }
 

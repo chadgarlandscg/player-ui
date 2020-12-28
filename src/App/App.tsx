@@ -5,6 +5,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { Content } from './Content/Content';
 import { Footer } from './Footer/Footer';
 import { Header } from './Header/Header';
+import { Provider } from 'react-redux'
+import store from '../Redux/Store';
 
 export const App: React.FC = () => {
     const theme = createMuiTheme({
@@ -15,11 +17,13 @@ export const App: React.FC = () => {
     });
     return (
         <BrowserRouter>
-            <ThemeProvider theme={theme}>
-                <Header />
-                <Content />
-                <Footer />
-            </ThemeProvider>
+            <Provider store={store}>
+                <ThemeProvider theme={theme}>
+                    <Header />
+                    <Content />
+                    <Footer />
+                </ThemeProvider>
+            </Provider>
         </BrowserRouter>
     );
 }
